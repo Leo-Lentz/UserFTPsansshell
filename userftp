@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# Chemin du fichier CSV contenant les informations des utilisateurs
+csv_file="Shell_Userlist.csv"
+
+# Fonction pour créer un utilisateur FTP
+create_ftp_user() {
+    Prenom=$1
+    Nom=$2
+    Mdp=$3
+    Role=$4
+#Ajout d'user et mot de passe
+useradd -m "$Prenom.$Nom" -p "$Mdp" --shell /bin/false --home /home/"$Prenom.$Nom"
+
+    # Attribution des droits Sudo si l'utilisateur est un admin
+    if [ "$Role" == "Admin" ]; then
+        usermod -aG sudo "$Prenom.$Nom"
+
+    fi
+
+    echo "Utilisateur $Prenom.$Nom créé avec succès."
+}
+
+# Lecture du fichier CSV et création des utilisateurs FTP
+while IFS=',' read -r Id Prenom Nom  Mdp Role
+do
+    # Vérification si les champs sont vides
+    if [ -n "$Mdp" ] && [ -n "$Role" ]; then
+        # Appel de la fonction pour créer l'utilisateur FTP
+        create_ftp_user "$Prenom" "$Nom" "$Mdp" "$Role"
+    fi
+done < "$csv_file"
